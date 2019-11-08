@@ -1,0 +1,22 @@
+# cnam: InitIDS called: 1 times, min: 0.000043, max: 0.000043, avg: 0.000043.
+# cnam: CleanIDS called: 1 times, min: 0.000245, max: 0.000245, avg: 0.000245.
+# cnam: GetImageFindCenter called: 5135 times, min: 0.000000, max: 0.616469, avg: 0.003004.
+# cnam: ComputeSpeedWhenLost called: 467 times, min: 0.000002, max: 0.012414, avg: 0.000196.
+# cnam: ComputeSpeed called: 812 times, min: 0.000008, max: 0.029432, avg: 0.000240.
+# cnam: PublishSpeed called: 1279 times, min: 0.000007, max: 0.011457, avg: 0.000404.
+# cnam: StopRobot called: 2 times, min: 0.000027, max: 0.000274, avg: 0.000150.
+# cnam: genom_abort_activity_codel not called once.
+# cnam: genom_connect_port_codel called: 1 times, min: 0.006488, max: 0.006488, avg: 0.006488.
+# cnam: genom_connect_remote_codel not called once.
+# cnam: genom_kill_codel called: 1 times, min: 0.000000, max: 0.000000, avg: 0.000000.
+# cnam: StopTrack called: 1 times, min: 0.000000, max: 0.000000, avg: 0.000000.
+cnam_InitIDS 0.000043
+cnam_CleanIDS 0.000245
+cnam_GetImageFindCenter 0.616469
+cnam_ComputeSpeedWhenLost 0.012414
+cnam_ComputeSpeed 0.029432
+cnam_PublishSpeed 0.011457
+cnam_StopRobot 0.000274
+cnam_genom_connect_port_codel 0.006488
+cnam_genom_kill_codel 0.000000
+cnam_StopTrack 0.000000
