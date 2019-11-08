@@ -1,0 +1,15 @@
+# pkg-config file for cnam interface and codels library
+#
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+datarootdir=@datarootdir@
+idldir=@datadir@/idl
+
+Name: cnam-genom3
+Description: cnam interface and codels library
+Version: @PACKAGE_VERSION@
+Cflags: -I${includedir} -I${idldir}
+Libs: -L${libdir} -lcnam_codels
+Libs.private: @codels_requires_LIBS@

@@ -1,0 +1,202 @@
+
+// This file was generated from cnam.gen by the skeleton
+// template. Manual changes should be preserved, although they should
+// rather be added to the "doc" attributes of the genom objects defined in
+// cnam.gen.
+
+= cnam component
+felix@laas.fr
+1.0
+:toc: left
+
+// fix default asciidoctor stylesheet issue #2407 and add hr clear rule
+ifdef::backend-html5[]
+[pass]
+++++
+<link rel="stylesheet" href="data:text/css,p{font-size: inherit !important}" >
+<link rel="stylesheet" href="data:text/css,hr{clear: both}" >
+++++
+endif::[]
+
+
+This module illustrates a simple genom module for the cnam ISAE BE.
+
+
+== Ports
+
+
+[[Image]]
+=== Image (in)
+
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Data structure
+[disc]
+ * `struct ::sensor::sensor_msgs_Image` `Image`
+ ** `struct ::sensor::std_msgs_header` `header`
+ *** `unsigned long` `seq`
+ *** `struct ::sensor::msgs_time` `stamp`
+ **** `unsigned long` `sec`
+ **** `unsigned long` `nsec`
+ *** `string` `frame_id`
+ ** `unsigned long` `height`
+ ** `unsigned long` `width`
+ ** `string` `encoding`
+ ** `octet` `is_bigendian`
+ ** `unsigned long` `step`
+ ** `sequence< octet >` `data`
+
+|===
+
+The port containing the image from the camera.
+
+'''
+
+[[Cmd]]
+=== Cmd (out)
+
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Data structure
+[disc]
+ * `struct ::geometry::geometry_msgs_Twist` `Cmd`
+ ** `struct ::geometry::geometry_msgs_Vector3` `linear`
+ *** `double` `x`
+ *** `double` `y`
+ *** `double` `z`
+ ** `struct ::geometry::geometry_msgs_Vector3` `angular`
+ *** `double` `x`
+ *** `double` `y`
+ *** `double` `z`
+
+|===
+
+The port in which we put the speed at which we drive the robot.
+
+'''
+
+== Services
+
+[[SetVerbose]]
+=== SetVerbose (attribute)
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Inputs
+[disc]
+ * `long` `verbose` (default `"0"`) Verbose level
+
+|===
+
+Set the verbose level.
+
+'''
+
+[[Set_my_r]]
+=== Set_my_r (attribute)
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Inputs
+[disc]
+ * `long` `my_r`
+
+|===
+
+'''
+
+[[Set_my_g]]
+=== Set_my_g (attribute)
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Inputs
+[disc]
+ * `long` `my_g`
+
+|===
+
+'''
+
+[[Set_my_b]]
+=== Set_my_b (attribute)
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Inputs
+[disc]
+ * `long` `my_b`
+
+|===
+
+'''
+
+[[Set_my_seuil]]
+=== Set_my_seuil (attribute)
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Inputs
+[disc]
+ * `long` `my_seuil`
+
+|===
+
+'''
+
+[[Stop]]
+=== Stop (function)
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Context
+[disc]
+  * Interrupts `<<ColorTrack>>`
+|===
+
+Stop the traxking.
+
+'''
+
+[[ColorTrack]]
+=== ColorTrack (activity)
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Throws
+[disc]
+ * `exception ::cnam::bad_cmd_port`
+
+ * `exception ::cnam::bad_image_port`
+
+ * `exception ::cnam::opencv_error`
+
+a|.Context
+[disc]
+  * In task `<<track>>`
+  (frequency 100.0 _Hz_)
+  * Reads port `<<Image>>`
+  * Updates port `<<Cmd>>`
+  * Interrupts `<<ColorTrack>>`
+|===
+
+Produce a twist so the robot follow the colored object.
+
+'''
+
+== Tasks
+
+[[track]]
+=== track
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Context
+[disc]
+  * Frequency 100.0 _Hz_
+* Updates port `<<Cmd>>`
+|===
+
+'''

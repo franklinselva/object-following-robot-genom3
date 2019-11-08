@@ -1,0 +1,111 @@
+/*
+ * Copyright (c) 2019 LAAS/CNRS
+ *
+ * Author: Felix Ingrand - LAAS/CNRS
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include "geometry.idl"		// Twist
+#include "sensor.idl"		// Image
+
+/* -------------------------- MODULE DECLARATION --------------------------- */
+component cnam {
+  version  "1.0";
+  email	  "felix@laas.fr";
+  lang	"c";
+  doc 	"This module illustrates a simple genom module for the cnam ISAE BE.";
+
+  codels-require "roscpp,geometry_msgs,nav_msgs,opencv,cv_bridge";
+
+  exception bad_image_port, bad_cmd_port, opencv_error, e_mem;
+
+  struct cmd_s{
+      double vx; // The internal speed struct
+      double wz;
+  };
+
+  ids {
+    long x,y; 			// Position of the center of orange object in the image
+    long width,height;		// Size of the image
+    long verbose;		// For logging verbosity
+    cmd_s cmd;			// Internal cmd
+
+    long my_r;			// Various values used by the image analysis algo.
+    long my_g;
+    long my_b;
+    long my_seuil;
+  };
+
+
+  /* ------------- DEFINITION OF PORTS -------------- */
+  port in sensor::Image Image {
+    doc "The port containing the image from the camera.";
+  };
+
+  port out geometry::Twist Cmd { // Note the Capital C in Cmd (cmd, in lower case, is the ids field)
+    doc "The port in which we put the speed at which we drive the robot.";
+  };
+
+  /* ------------------ TASK DEFINITION -------------------- */
+  task track {
+    period		10 ms;	// fast, but we only process theimage when it is new.
+    codel <start>	InitIDS(port out Cmd, ids out cmd, ids out x, ids out y) yield ether;
+    codel <stop>	CleanIDS(port out Cmd) yield ether;
+  };
+
+  /* ------------------ SERVICES DEFINITION: The attributes -------------------- */
+  attribute SetVerbose(in verbose = 0 : "Verbose level")
+  {
+    doc		"Set the verbose level.";
+  };
+
+  attribute Set_my_r(in my_r );
+
+  attribute Set_my_g(in my_g);
+
+  attribute Set_my_b(in my_b);
+
+  attribute Set_my_seuil(in my_seuil);
+
+
+  /* ------------------ SERVICES DEFINITION: The Functions -------------------- */
+  function Stop()
+  {
+    doc		"Stop the traxking.";
+    codel	StopTrack(in verbose);
+
+    interrupts	ColorTrack;	// This field will force the transition to the stop codel in ColorTrack
+  };
+
+  /* ------------------ SERVICES DEFINITION: The activities -------------------- */
+
+  activity ColorTrack () {
+    doc 		"Produce a twist so the robot follow the colored object.";
+
+    codel <start>   	GetImageFindCenter(port in Image, in my_r, in my_g, in my_b, in my_seuil,
+					   ids out x, ids out y, out width, out height, in verbose) 
+      				yield pause::start, // no new image, wait next cycle
+      				      CompCmd,      // found it
+      				      ether;        // in case of error.
+    codel <CompCmd>	ComputeSpeed(in x, in y, in width, in height, out cmd, in verbose) yield PubCmd,ether;
+    codel <PubCmd>	PublishSpeed(in cmd, out Cmd) 
+				yield pause::start, // Loop back at the start in the next cycle
+      				      ether;        // in case of error.
+    codel <stop>	StopRobot(out cmd, out Cmd) yield ether; // this codel is called when the service is interrupted
+
+    throw		bad_cmd_port, bad_image_port, opencv_error;
+    interrupts		ColorTrack; // Only one at a time
+    task 		track;
+  };
+};
