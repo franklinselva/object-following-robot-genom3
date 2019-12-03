@@ -16,22 +16,22 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "geometry.idl"		// Twist
-#include "sensor.idl"		// Image
+#include "geometry.idl"    // Twist definition ROS masquerade geometry/Twist
+#include "sensor.idl"      // Image definition ROS masquerade sensor/Image
 
 /* -------------------------- MODULE DECLARATION --------------------------- */
 component cnam {
-  version  "1.0";
+  version "1.0";
   email	  "felix@laas.fr";
-  lang	"c";
-  doc 	"This module illustrates a simple genom module for the cnam ISAE BE.";
+  lang	  "c";
+  doc 	  "This module illustrates a simple genom module for the cnam ISAE BE.";
 
   codels-require "roscpp,geometry_msgs,nav_msgs,opencv,cv_bridge";
 
   exception bad_image_port, bad_cmd_port, opencv_error, e_mem;
 
   struct cmd_s{
-      double vx; // The internal speed struct
+      double vx; // The internal speed struct declaration
       double wz;
   };
 
@@ -47,19 +47,18 @@ component cnam {
     long my_seuil;
   };
 
-
   /* ------------- DEFINITION OF PORTS -------------- */
   port in sensor::Image Image {
-    doc "The port containing the image from the camera.";
+    doc "The port Image containing the image from the camera.";
   };
 
   port out geometry::Twist Cmd { // Note the Capital C in Cmd (cmd, in lower case, is the ids field)
-    doc "The port in which we put the speed at which we drive the robot.";
+    doc "The port Cmd in which we put the speed at which we drive the robot.";
   };
 
   /* ------------------ TASK DEFINITION -------------------- */
   task track {
-    period		10 ms;	// fast, but we only process theimage when it is new.
+    period		10 ms;	// fast, but we only process the image when it is new.
     codel <start>	InitIDS(port out Cmd, ids out cmd, ids out x, ids out y) yield ether;
     codel <stop>	CleanIDS(port out Cmd) yield ether;
   };
@@ -70,19 +69,15 @@ component cnam {
     doc		"Set the verbose level.";
   };
 
-  attribute Set_my_r(in my_r );
-
+  attribute Set_my_r(in my_r);
   attribute Set_my_g(in my_g);
-
   attribute Set_my_b(in my_b);
-
   attribute Set_my_seuil(in my_seuil);
-
 
   /* ------------------ SERVICES DEFINITION: The Functions -------------------- */
   function Stop()
   {
-    doc		"Stop the traxking.";
+    doc		"Stop the tracking.";
     codel	StopTrack(in verbose);
 
     interrupts	ColorTrack;	// This field will force the transition to the stop codel in ColorTrack
@@ -93,16 +88,24 @@ component cnam {
   activity ColorTrack () {
     doc 		"Produce a twist so the robot follow the colored object.";
 
+    // Automata syntax
+    // codel <state>    c_function({{ids|port|local}? {in|out|inout} arg_k,}*)
+    //                       yield {pause::}?<state_i> {, {pause::}?<state_j>}*;
+    // - ids/port/local is optional if arg_k name is on ambiguous,
+    // - start, stop and ether are predefined states,
+    // - yield pause::state means transition will wait the next task cycle to lead to state.
     codel <start>   	GetImageFindCenter(port in Image, in my_r, in my_g, in my_b, in my_seuil,
 					   ids out x, ids out y, out width, out height, in verbose) 
       				yield pause::start, // no new image, wait next cycle
       				      CompCmd,      // found it
       				      ether;        // in case of error.
-    codel <CompCmd>	ComputeSpeed(in x, in y, in width, in height, out cmd, in verbose) yield PubCmd,ether;
+    codel <CompCmd>	ComputeSpeed(in x, in y, in width, in height, out cmd, in verbose)
+                                yield PubCmd, ether;
     codel <PubCmd>	PublishSpeed(in cmd, out Cmd) 
 				yield pause::start, // Loop back at the start in the next cycle
       				      ether;        // in case of error.
-    codel <stop>	StopRobot(out cmd, out Cmd) yield ether; // this codel is called when the service is interrupted
+    codel <stop>	StopRobot(out cmd, out Cmd) // stop is a predefined state when interrupted
+				yield ether; // this codel is called when the service is interrupted
 
     throw		bad_cmd_port, bad_image_port, opencv_error;
     interrupts		ColorTrack; // Only one at a time
