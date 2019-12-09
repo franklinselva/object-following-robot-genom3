@@ -49,7 +49,7 @@ a|.Data structure
 
 |===
 
-The port containing the image from the camera.
+The port Image containing the image from the camera.
 
 '''
 
@@ -73,7 +73,7 @@ a|.Data structure
 
 |===
 
-The port in which we put the speed at which we drive the robot.
+The port Cmd in which we put the speed at which we drive the robot.
 
 '''
 
@@ -156,7 +156,7 @@ a|.Context
   * Interrupts `<<ColorTrack>>`
 |===
 
-Stop the traxking.
+Stop the tracking.
 
 '''
 

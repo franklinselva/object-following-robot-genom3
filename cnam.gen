@@ -78,7 +78,7 @@ component cnam {
   function Stop()
   {
     doc		"Stop the tracking.";
-    codel	StopTrack(in verbose);
+    codel	StopTrack(in verbose); // This codel does not do anything... just here as an example.
 
     interrupts	ColorTrack;	// This field will force the transition to the stop codel in ColorTrack
   };

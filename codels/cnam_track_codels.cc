@@ -4,12 +4,12 @@
 
 #include "cnam_c_types.h"
 
-//add include for manipulate sensor_msgs::Image type:
+//include for sensor_msgs::Image type
 #include "sensor_msgs/Image.h"
 #include <cv_bridge/cv_bridge.h>
 #include "opencv2/opencv.hpp"
 
-//TODO add #include for output topic type (geometry_msgs/Twist)
+//include for geometry_msgs::Twist type
 #include "geometry_msgs/Twist.h"
 
 //for binarisation function:
@@ -28,6 +28,7 @@ static const std::string OPENCV_WINDOW = "Image window";
 #define write_port_p(port) 		((port)->write(self) == genom_ok)
 #define write_port(port,exception) 	if (!(write_port_p(port))) return (exception)(self)
 
+// We are not really using ROS so just remap this macro
 #define ROS_INFO warnx
 #define ROS_ERROR warnx
 
@@ -109,7 +110,7 @@ GetImageFindCenter(const cnam_Image *Image, int32_t my_r, int32_t my_g,
   bind_port_in(Image,cnam_bad_image_port);
 
   if (seq && (seq == ImageData->header.seq)) {
-    return cnam_pause_start;	// the image is not new, wait next cycle
+    return cnam_pause_start;	// the image is not new, wait the nextexecution task cycle
   }
   
   // copy ImageData in msg...so I can use cv_bridge
@@ -150,12 +151,6 @@ GetImageFindCenter(const cnam_Image *Image, int32_t my_r, int32_t my_g,
   IplImage _ipl_img=cv_ptr->image;
   IplImage *ptr_ipl_img= &_ipl_img;
 
-  //For see OpenCV Image:
-  //
-  // Update GUI Window
-  //  cv::imshow(OPENCV_WINDOW, cv_ptr->image);
-  //  cv::waitKey(3);
-
   //declare a CvPoint
   CvPoint coord;
 
@@ -165,10 +160,6 @@ GetImageFindCenter(const cnam_Image *Image, int32_t my_r, int32_t my_g,
 
   if (verbose > 0) printf("height: %d,\twidth: %d,\tx: %d,\ty: %d\n",
  			  ptr_ipl_img->height, ptr_ipl_img->width, coord.x, coord.y);
-
-
-  // free(msg.header.frame_id);
-  // free(msg.encoding);
 
   *x = coord.x;
   *y = coord.y;
@@ -190,7 +181,7 @@ ComputeSpeed(int32_t x, int32_t y, int32_t width, int32_t height,
              const genom_context self)
 {
   if (x == -1) {		// We lost it
-    cmd->wz = 0;
+    cmd->wz = 0;		// Stop the robot
     cmd->vx = 0;
 
     if (verbose > 0) printf("Lost the brick vx: %f,\twz: %f\n", 
@@ -208,7 +199,6 @@ ComputeSpeed(int32_t x, int32_t y, int32_t width, int32_t height,
  			  cmd->vx, cmd->wz, cmd_x_pixel_value, cmd_y_pixel_value);
   }
 
-
   return cnam_PubCmd;
 }
 
@@ -223,6 +213,8 @@ PublishSpeed(const cnam_cmd_s *cmd, const cnam_Cmd *Cmd,
              const genom_context self)
 {
   geometry_Twist  *CmdData;
+
+  // This codel publish the ids cmd speed in the port Cmd.
 
   bind_port_out(Cmd, cnam_bad_cmd_port);
 
@@ -248,6 +240,7 @@ genom_event
 StopRobot(cnam_cmd_s *cmd, const cnam_Cmd *Cmd,
           const genom_context self)
 {
+  // Set the ids cmd and the port Cmd to zero.
   geometry_Twist  *CmdData;
 
   bind_port_out(Cmd, cnam_bad_cmd_port);
