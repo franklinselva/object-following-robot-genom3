@@ -110,7 +110,7 @@ GetImageFindCenter(const cnam_Image *Image, int32_t my_r, int32_t my_g,
   bind_port_in(Image,cnam_bad_image_port);
 
   if (seq && (seq == ImageData->header.seq)) {
-    return cnam_pause_start;	// the image is not new, wait the nextexecution task cycle
+    return cnam_pause_start;	// the image is not new, wait the next execution task cycle
   }
   
   // copy ImageData in msg...so I can use cv_bridge
@@ -141,7 +141,7 @@ GetImageFindCenter(const cnam_Image *Image, int32_t my_r, int32_t my_g,
   try
   {
     cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    if (verbose) ROS_INFO("I have received image! ;-)");
+    if (verbose) ROS_INFO("I have received an image! ;-)");
   }
   catch (cv_bridge::Exception& e)
   {
@@ -172,7 +172,7 @@ GetImageFindCenter(const cnam_Image *Image, int32_t my_r, int32_t my_g,
 /** Codel ComputeSpeed of activity ColorTrack.
  *
  * Triggered by cnam_CompCmd.
- * Yields to cnam_PubCmd, cnam_ether.
+ * Yields to cnam_PubCmd.
  * Throws cnam_bad_cmd_port, cnam_bad_image_port, cnam_opencv_error.
  */
 genom_event
@@ -212,9 +212,8 @@ genom_event
 PublishSpeed(const cnam_cmd_s *cmd, const cnam_Cmd *Cmd,
              const genom_context self)
 {
-  geometry_Twist  *CmdData;
-
   // This codel publish the ids cmd speed in the port Cmd.
+  geometry_Twist  *CmdData;	// A pointer to the Cmd port data.
 
   bind_port_out(Cmd, cnam_bad_cmd_port);
 
@@ -241,7 +240,7 @@ StopRobot(cnam_cmd_s *cmd, const cnam_Cmd *Cmd,
           const genom_context self)
 {
   // Set the ids cmd and the port Cmd to zero.
-  geometry_Twist  *CmdData;
+  geometry_Twist  *CmdData; 	// A pointer to the Cmd port data.
 
   bind_port_out(Cmd, cnam_bad_cmd_port);
 

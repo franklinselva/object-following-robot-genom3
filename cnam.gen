@@ -100,7 +100,7 @@ component cnam {
       				      CompCmd,      // found it
       				      ether;        // in case of error.
     codel <CompCmd>	ComputeSpeed(in x, in y, in width, in height, out cmd, in verbose)
-                                yield PubCmd, ether;
+                                yield PubCmd;
     codel <PubCmd>	PublishSpeed(in cmd, out Cmd) 
 				yield pause::start, // Loop back at the start in the next cycle
       				      ether;        // in case of error.
