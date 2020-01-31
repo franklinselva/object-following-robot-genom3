@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 LAAS/CNRS
+ * Copyright (c) 2019-2020 LAAS/CNRS
  *
  * Author: Felix Ingrand - LAAS/CNRS
  *
@@ -48,19 +48,19 @@ component cnam {
   };
 
   /* ------------- DEFINITION OF PORTS -------------- */
-  port in sensor::Image Image {
-    doc "The port Image containing the image from the camera.";
+  port in sensor::Image ImagePort {
+    doc "The port ImagePort containing the image from the camera.";
   };
 
-  port out geometry::Twist Cmd { // Note the Capital C in Cmd (cmd, in lower case, is the ids field)
-    doc "The port Cmd in which we put the speed at which we drive the robot.";
+  port out geometry::Twist CmdPort { // CmdPort is the port (cmd (see above), in lower case, is the ids field)
+    doc "The port CmdPort in which we put the speed at which we drive the robot.";
   };
 
   /* ------------------ TASK DEFINITION -------------------- */
   task track {
     period		10 ms;	// fast, but we only process the image when it is new.
-    codel <start>	InitIDS(port out Cmd, ids out cmd, ids out x, ids out y) yield ether;
-    codel <stop>	CleanIDS(port out Cmd) yield ether;
+    codel <start>	InitIDS(port out CmdPort, ids out cmd, ids out x, ids out y) yield ether;
+    codel <stop>	CleanIDS(port out CmdPort) yield ether;
   };
 
   /* ------------------ SERVICES DEFINITION: The attributes -------------------- */
@@ -94,17 +94,17 @@ component cnam {
     // - ids/port/local is optional if arg_k name is on ambiguous,
     // - start, stop and ether are predefined states,
     // - yield pause::state means transition will wait the next task cycle to lead to state.
-    codel <start>   	GetImageFindCenter(port in Image, in my_r, in my_g, in my_b, in my_seuil,
+    codel <start>   	GetImageFindCenter(port in ImagePort, in my_r, in my_g, in my_b, in my_seuil,
 					   ids out x, ids out y, out width, out height, in verbose) 
       				yield pause::start, // no new image, wait next cycle
       				      CompCmd,      // found it
       				      ether;        // in case of error.
     codel <CompCmd>	ComputeSpeed(in x, in y, in width, in height, out cmd, in verbose)
                                 yield PubCmd;
-    codel <PubCmd>	PublishSpeed(in cmd, out Cmd) 
+    codel <PubCmd>	PublishSpeed(in cmd, out CmdPort) 
 				yield pause::start, // Loop back at the start in the next cycle
       				      ether;        // in case of error.
-    codel <stop>	StopRobot(out cmd, out Cmd) // stop is a predefined state when interrupted
+    codel <stop>	StopRobot(out cmd, out CmdPort) // stop is a predefined state when interrupted
 				yield ether; // this codel is called when the service is interrupted
 
     throw		bad_cmd_port, bad_image_port, opencv_error;

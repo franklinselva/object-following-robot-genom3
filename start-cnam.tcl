@@ -9,5 +9,5 @@ proc init {} {
     cnam::Set_my_g 103
     cnam::Set_my_b 4
     cnam::Set_my_seuil 40
-    cnam::connect_port {local Image remote /TTRK/CameraMain/image}
+    cnam::connect_port {local ImagePort remote /TTRK/CameraMain/image}
 } 

@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2019-2020 LAAS/CNRS
+ *
+ * Authors: Felix Ingrand - LAAS/CNRS and Pascal Chauveau ISAE
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
 #include <stdio.h>
 #include <err.h>
 #include "accnam.h"
@@ -17,7 +35,7 @@
 
 static const std::string OPENCV_WINDOW = "Image window";
 
-/* Some macros to make my like easier. V2 */
+/* Some macros to make my life easier. V2 */
 #define check_port_in_p(port) 		(((port)->read(self) == genom_ok) && ((port)->data(self)))
 #define check_port_in(port,exception) 	if (!(check_port_in_p(port))) return (exception)(self)
 #define check_port_out(port,exception) 	if (!((port)->data(self))) return (exception)(self)
@@ -41,21 +59,21 @@ static const std::string OPENCV_WINDOW = "Image window";
  * Yields to cnam_ether.
  */
 genom_event
-InitIDS(const cnam_Cmd *Cmd, cnam_cmd_s *cmd, int32_t *x, int32_t *y,
-        const genom_context self)
+InitIDS(const cnam_CmdPort *CmdPort, cnam_cmd_s *cmd, int32_t *x,
+        int32_t *y, const genom_context self)
 {
-  geometry_Twist  *CmdData;
+  geometry_Twist  *CmdPortData;
 
-  bind_port_out(Cmd, cnam_bad_cmd_port);
+  bind_port_out(CmdPort, cnam_bad_cmd_port);
 
-  CmdData->linear.x = 0.0;
-  CmdData->linear.y = 0.0;
-  CmdData->linear.z = 0.0;
-  CmdData->angular.x = 0.0;
-  CmdData->angular.y = 0.0;
-  CmdData->angular.z = 0.0;
+  CmdPortData->linear.x = 0.0;
+  CmdPortData->linear.y = 0.0;
+  CmdPortData->linear.z = 0.0;
+  CmdPortData->angular.x = 0.0;
+  CmdPortData->angular.y = 0.0;
+  CmdPortData->angular.z = 0.0;
 
-  write_port(Cmd, cnam_bad_cmd_port);
+  write_port(CmdPort, cnam_bad_cmd_port);
 
   cmd->vx = cmd->wz = 0.0;
   x = y = 0;
@@ -70,20 +88,20 @@ InitIDS(const cnam_Cmd *Cmd, cnam_cmd_s *cmd, int32_t *x, int32_t *y,
  * Yields to cnam_ether.
  */
 genom_event
-CleanIDS(const cnam_Cmd *Cmd, const genom_context self)
+CleanIDS(const cnam_CmdPort *CmdPort, const genom_context self)
 {
-  geometry_Twist  *CmdData;
+  geometry_Twist  *CmdPortData;
 
-  bind_port_out(Cmd, cnam_bad_cmd_port); 
+  bind_port_out(CmdPort, cnam_bad_cmd_port); 
 
-  CmdData->linear.x = 0.0;
-  CmdData->linear.y = 0.0;
-  CmdData->linear.z = 0.0;
-  CmdData->angular.x = 0.0;
-  CmdData->angular.y = 0.0;
-  CmdData->angular.z = 0.0;
+  CmdPortData->linear.x = 0.0;
+  CmdPortData->linear.y = 0.0;
+  CmdPortData->linear.z = 0.0;
+  CmdPortData->angular.x = 0.0;
+  CmdPortData->angular.y = 0.0;
+  CmdPortData->angular.z = 0.0;
 
-  write_port(Cmd, cnam_bad_cmd_port); // before quitting... stop the robot.
+  write_port(CmdPort, cnam_bad_cmd_port); // before quitting... stop the robot.
 
   return cnam_ether;
 }
@@ -98,42 +116,43 @@ CleanIDS(const cnam_Cmd *Cmd, const genom_context self)
  * Throws cnam_bad_cmd_port, cnam_bad_image_port, cnam_opencv_error.
  */
 genom_event
-GetImageFindCenter(const cnam_Image *Image, int32_t my_r, int32_t my_g,
-                   int32_t my_b, int32_t my_seuil, int32_t *x,
-                   int32_t *y, int32_t *width, int32_t *height,
-                   int32_t verbose, const genom_context self)
+GetImageFindCenter(const cnam_ImagePort *ImagePort, int32_t my_r,
+                   int32_t my_g, int32_t my_b, int32_t my_seuil,
+                   int32_t *x, int32_t *y, int32_t *width,
+                   int32_t *height, int32_t verbose,
+                   const genom_context self)
 {
   static unsigned int seq = 0;
-  sensor_Image *ImageData;
+  sensor_Image *ImagePortData;
   sensor_msgs::Image msg;
 
-  bind_port_in(Image,cnam_bad_image_port);
+  bind_port_in(ImagePort,cnam_bad_image_port);
 
-  if (seq && (seq == ImageData->header.seq)) {
+  if (seq && (seq == ImagePortData->header.seq)) {
     return cnam_pause_start;	// the image is not new, wait the next execution task cycle
   }
   
-  // copy ImageData in msg...so I can use cv_bridge
-  seq = msg.header.seq = ImageData->header.seq; 
-  msg.header.frame_id = ImageData->header.frame_id;
-  msg.header.stamp.nsec = ImageData->header.stamp.nsec; 
-  msg.header.stamp.nsec = ImageData->header.stamp.nsec; 
-  msg.height = ImageData->height; 
-  msg.width = ImageData->width; 
-  msg.encoding = ImageData->encoding; 
-  msg.is_bigendian = ImageData->is_bigendian; 
-  msg.step = ImageData->step; 
+  // copy ImagePortData in msg...so I can use cv_bridge
+  seq = msg.header.seq = ImagePortData->header.seq; 
+  msg.header.frame_id = ImagePortData->header.frame_id;
+  msg.header.stamp.nsec = ImagePortData->header.stamp.nsec; 
+  msg.header.stamp.nsec = ImagePortData->header.stamp.nsec; 
+  msg.height = ImagePortData->height; 
+  msg.width = ImagePortData->width; 
+  msg.encoding = ImagePortData->encoding; 
+  msg.is_bigendian = ImagePortData->is_bigendian; 
+  msg.step = ImagePortData->step; 
 
-  const int image_size = ImageData->height *  ImageData->step;
+  const int image_size = ImagePortData->height *  ImagePortData->step;
   
-  if (image_size != ImageData->data._length) {
+  if (image_size != ImagePortData->data._length) {
     warnx("Image wrong size.");
     return cnam_bad_image_port(self);
   }
 
   msg.data.reserve(image_size);
   for( int i=0; i < image_size; i++ ) {
-    msg.data.push_back(ImageData->data._buffer[i]); 
+    msg.data.push_back(ImagePortData->data._buffer[i]); 
   }
   
   //necessary for transform ros image type into opencv image type
@@ -209,22 +228,22 @@ ComputeSpeed(int32_t x, int32_t y, int32_t width, int32_t height,
  * Throws cnam_bad_cmd_port, cnam_bad_image_port, cnam_opencv_error.
  */
 genom_event
-PublishSpeed(const cnam_cmd_s *cmd, const cnam_Cmd *Cmd,
+PublishSpeed(const cnam_cmd_s *cmd, const cnam_CmdPort *CmdPort,
              const genom_context self)
 {
-  // This codel publish the ids cmd speed in the port Cmd.
-  geometry_Twist  *CmdData;	// A pointer to the Cmd port data.
+  // This codel publish the ids cmd speed in the port CmdPort.
+  geometry_Twist  *CmdPortData;	// A pointer to the CmdPort port data.
 
-  bind_port_out(Cmd, cnam_bad_cmd_port);
+  bind_port_out(CmdPort, cnam_bad_cmd_port);
 
-  CmdData->linear.x = cmd->vx;
-  CmdData->linear.y = 0.0;
-  CmdData->linear.z = 0.0;
-  CmdData->angular.x = 0.0;
-  CmdData->angular.y = 0.0;
-  CmdData->angular.z = cmd->wz;
+  CmdPortData->linear.x = cmd->vx;
+  CmdPortData->linear.y = 0.0;
+  CmdPortData->linear.z = 0.0;
+  CmdPortData->angular.x = 0.0;
+  CmdPortData->angular.y = 0.0;
+  CmdPortData->angular.z = cmd->wz;
 
-  write_port(Cmd, cnam_bad_cmd_port);
+  write_port(CmdPort, cnam_bad_cmd_port);
 
   return cnam_pause_start;
 }
@@ -236,22 +255,22 @@ PublishSpeed(const cnam_cmd_s *cmd, const cnam_Cmd *Cmd,
  * Throws cnam_bad_cmd_port, cnam_bad_image_port, cnam_opencv_error.
  */
 genom_event
-StopRobot(cnam_cmd_s *cmd, const cnam_Cmd *Cmd,
+StopRobot(cnam_cmd_s *cmd, const cnam_CmdPort *CmdPort,
           const genom_context self)
 {
-  // Set the ids cmd and the port Cmd to zero.
-  geometry_Twist  *CmdData; 	// A pointer to the Cmd port data.
+  // Set the ids cmd and the port CmdPort to zero.
+  geometry_Twist  *CmdPortData; 	// A pointer to the CmdPort port data.
 
-  bind_port_out(Cmd, cnam_bad_cmd_port);
+  bind_port_out(CmdPort, cnam_bad_cmd_port);
 
-  CmdData->linear.x = cmd->vx = 0.0;
-  CmdData->linear.y = 0.0;
-  CmdData->linear.z = 0.0;
-  CmdData->angular.x = 0.0;
-  CmdData->angular.y = 0.0;
-  CmdData->angular.z = cmd->wz = 0.0;
+  CmdPortData->linear.x = cmd->vx = 0.0;
+  CmdPortData->linear.y = 0.0;
+  CmdPortData->linear.z = 0.0;
+  CmdPortData->angular.x = 0.0;
+  CmdPortData->angular.y = 0.0;
+  CmdPortData->angular.z = cmd->wz = 0.0;
 
-  write_port(Cmd, cnam_bad_cmd_port);
+  write_port(CmdPort, cnam_bad_cmd_port);
   
   return cnam_ether;
 }
