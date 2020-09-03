@@ -2,4 +2,5 @@
 pkill genomixd
 pkill -f 'cnam-ros'
 pkill -f morse
+pkill -9 genomixd
 

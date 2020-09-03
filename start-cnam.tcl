@@ -1,6 +1,6 @@
 package require genomix
 genomix::connect
-genomix1 rpath /opt/openrobots/lib/genom/ros/plugins/
+genomix1 rpath /home/felix/work/lib/genom/ros/plugins/
 genomix1 load cnam
 
 proc init {} {
