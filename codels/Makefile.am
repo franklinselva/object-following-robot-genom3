@@ -1,16 +1,16 @@
 lib_LTLIBRARIES = libcnam_codels.la
 
-libcnam_codels_la_SOURCES=	cnam_c_types.h
-libcnam_codels_la_SOURCES+=	cnam_codels.cc
-libcnam_codels_la_SOURCES+=	cnam_track_codels.cc
+libcnam_codels_la_SOURCES  =	cnam_c_types.h
+libcnam_codels_la_SOURCES +=	cnam_codels.cc
+libcnam_codels_la_SOURCES +=	cnam_track_codels.cc
 
 libcnam_codels_la_SOURCES+=	DetectionCnam_codels.cpp DetectionCnam_codels.hpp
 
-libcnam_codels_la_CPPFLAGS=	$(requires_CFLAGS)
-libcnam_codels_la_LDFLAGS=	$(requires_LIBS)
+libcnam_codels_la_CPPFLAGS =	$(requires_CFLAGS)
+libcnam_codels_la_LIBADD   =	$(requires_LIBS)
 libcnam_codels_la_CPPFLAGS+=	$(codels_requires_CFLAGS)
-libcnam_codels_la_LDFLAGS+=	$(codels_requires_LIBS)
-libcnam_codels_la_LDFLAGS+=	-release $(PACKAGE_VERSION)
+libcnam_codels_la_LIBADD  +=	$(codels_requires_LIBS)
+libcnam_codels_la_LDFLAGS  =	-release $(PACKAGE_VERSION)
 
 
 # idl  mappings

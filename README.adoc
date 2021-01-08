@@ -19,7 +19,7 @@ ifdef::backend-html5[]
 endif::[]
 
 
-This module illustrates a simple genom module for the cnam ISAE BE.
+This module illustrates a simple GenoM module for the cnam ISAE UPSSITECH BE.
 
 
 == Ports
