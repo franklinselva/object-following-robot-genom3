@@ -3,6 +3,7 @@
 
 //pour utiliser la librairie OpenCV:
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/types_c.h>
 
 
 CvPoint binarisation(IplImage* image, int b, int g, int r, int tolerance);

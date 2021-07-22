@@ -4,7 +4,7 @@ libcnam_codels_la_SOURCES  =	cnam_c_types.h
 libcnam_codels_la_SOURCES +=	cnam_codels.cc
 libcnam_codels_la_SOURCES +=	cnam_track_codels.cc
 
-libcnam_codels_la_SOURCES+=	DetectionCnam_codels.cpp DetectionCnam_codels.hpp
+libcnam_codels_la_SOURCES +=	DetectionCnam_codels.cpp DetectionCnam_codels.hpp
 
 libcnam_codels_la_CPPFLAGS =	$(requires_CFLAGS)
 libcnam_codels_la_LIBADD   =	$(requires_LIBS)

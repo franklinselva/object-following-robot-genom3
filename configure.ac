@@ -30,7 +30,7 @@ PKG_CHECK_MODULES(requires, [
   genom3 >= 2.99.4
 ])
 PKG_CHECK_MODULES(codels_requires, [
-  roscpp,geometry_msgs,nav_msgs,opencv,cv_bridge
+  roscpp,geometry_msgs,nav_msgs,opencv4,cv_bridge
 ])
 
 AC_PATH_PROG(GENOM3, [genom3], [no])

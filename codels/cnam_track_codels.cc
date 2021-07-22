@@ -167,7 +167,11 @@ GetImageFindCenter(const cnam_ImagePort *ImagePort, int32_t my_r,
     ROS_ERROR("cv_bridge exception: %s", e.what());
     return cnam_opencv_error(self);
   }
+#if CV_VERSION_MAJOR == 4
+  IplImage _ipl_img=cvIplImage(cv_ptr->image);
+#else
   IplImage _ipl_img=cv_ptr->image;
+#endif
   IplImage *ptr_ipl_img= &_ipl_img;
 
   //declare a CvPoint
@@ -206,13 +210,12 @@ ComputeSpeed(int32_t x, int32_t y, int32_t width, int32_t height,
     if (verbose > 0) printf("Lost the brick vx: %f,\twz: %f\n", 
 			    cmd->vx, cmd->wz);
   } else {
-    float cibleY = height * 3 / 4;
 
-    float cmd_x_pixel_value= 2.0 / width;
-    float cmd_y_pixel_value= 2.0 / (height - cibleY);
+    float cmd_x_pixel_value= 5.0 / width; // 5 rad/s for the entire width
+    float cmd_y_pixel_value= 5.0 / height; // 5 m/s for the entire height
 
     cmd->wz = - ((x - width/2) * cmd_x_pixel_value);
-    cmd->vx = - ((y - cibleY) * cmd_y_pixel_value);
+    cmd->vx = - ((y - height/2) * cmd_y_pixel_value);
 
     if (verbose > 0) printf("vx: %f,\twz: %f,\txp: %f,\typ: %f\n", 
  			  cmd->vx, cmd->wz, cmd_x_pixel_value, cmd_y_pixel_value);

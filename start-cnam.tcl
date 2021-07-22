@@ -5,9 +5,9 @@ genomix1 load cnam
 
 proc init {} {
     cnam::SetVerbose 1
-    cnam::Set_my_r 213 
-    cnam::Set_my_g 103
-    cnam::Set_my_b 4
+    cnam::Set_my_r 3 
+    cnam::Set_my_g 2
+    cnam::Set_my_b 105
     cnam::Set_my_seuil 40
-    cnam::connect_port {local ImagePort remote /TTRK/CameraMain/image}
+    cnam::connect_port {local ImagePort remote /camera/image_raw}
 } 
