@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020 LAAS/CNRS
+ * Copyright (c) 2019-2021 LAAS/CNRS
  *
  * Authors: Felix Ingrand - LAAS/CNRS and Pascal Chauveau ISAE
  *
@@ -76,7 +76,7 @@ InitIDS(const cnam_CmdPort *CmdPort, cnam_cmd_s *cmd, int32_t *x,
   write_port(CmdPort, cnam_bad_cmd_port);
 
   cmd->vx = cmd->wz = 0.0;
-  x = y = 0;
+  *x = *y = 0;
 
   return cnam_ether;
 }
