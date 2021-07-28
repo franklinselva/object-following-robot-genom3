@@ -1,10 +1,11 @@
 
-// This file was generated from cnam.gen by the skeleton
+
+// This file was generated from CT_robot.gen by the skeleton
 // template. Manual changes should be preserved, although they should
 // rather be added to the "doc" attributes of the genom objects defined in
-// cnam.gen.
+// CT_robot.gen.
 
-= cnam component
+= CT_robot component
 felix@laas.fr
 1.0
 :toc: left
@@ -19,7 +20,7 @@ ifdef::backend-html5[]
 endif::[]
 
 
-This module illustrates a simple GenoM module for the cnam ISAE UPSSITECH BE.
+This module illustrates a simple GenoM module for the CT_robot ISAE UPSSITECH BE.
 
 
 == Ports
@@ -167,11 +168,11 @@ Stop the tracking.
 |===
 a|.Throws
 [disc]
- * `exception ::cnam::bad_cmd_port`
+ * `exception ::CT_robot::bad_cmd_port`
 
- * `exception ::cnam::bad_image_port`
+ * `exception ::CT_robot::bad_image_port`
 
- * `exception ::cnam::opencv_error`
+ * `exception ::CT_robot::opencv_error`
 
 a|.Context
 [disc]

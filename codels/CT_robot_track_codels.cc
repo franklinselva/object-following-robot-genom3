@@ -18,9 +18,9 @@
 
 #include <stdio.h>
 #include <err.h>
-#include "accnam.h"
+#include "acCT_robot.h"
 
-#include "cnam_c_types.h"
+#include "CT_robot_c_types.h"
 
 //include for sensor_msgs::Image type
 #include "sensor_msgs/Image.h"
@@ -31,7 +31,7 @@
 #include "geometry_msgs/Twist.h"
 
 //for binarisation function:
-#include "DetectionCnam_codels.hpp"
+#include "Detection_codels.hpp"
 
 static const std::string OPENCV_WINDOW = "Image window";
 
@@ -55,16 +55,16 @@ static const std::string OPENCV_WINDOW = "Image window";
 
 /** Codel InitIDS of task track.
  *
- * Triggered by cnam_start.
- * Yields to cnam_ether.
+ * Triggered by CT_robot_start.
+ * Yields to CT_robot_ether.
  */
 genom_event
-InitIDS(const cnam_CmdPort *CmdPort, cnam_cmd_s *cmd, int32_t *x,
-        int32_t *y, const genom_context self)
+InitIDS(const CT_robot_CmdPort *CmdPort, CT_robot_cmd_s *cmd,
+        int32_t *x, int32_t *y, const genom_context self)
 {
   geometry_Twist  *CmdPortData;
 
-  bind_port_out(CmdPort, cnam_bad_cmd_port);
+  bind_port_out(CmdPort, CT_robot_bad_cmd_port);
 
   CmdPortData->linear.x = 0.0;
   CmdPortData->linear.y = 0.0;
@@ -73,26 +73,26 @@ InitIDS(const cnam_CmdPort *CmdPort, cnam_cmd_s *cmd, int32_t *x,
   CmdPortData->angular.y = 0.0;
   CmdPortData->angular.z = 0.0;
 
-  write_port(CmdPort, cnam_bad_cmd_port);
+  write_port(CmdPort, CT_robot_bad_cmd_port);
 
   cmd->vx = cmd->wz = 0.0;
   *x = *y = 0;
 
-  return cnam_ether;
+  return CT_robot_ether;
 }
 
 
 /** Codel CleanIDS of task track.
  *
- * Triggered by cnam_stop.
- * Yields to cnam_ether.
+ * Triggered by CT_robot_stop.
+ * Yields to CT_robot_ether.
  */
 genom_event
-CleanIDS(const cnam_CmdPort *CmdPort, const genom_context self)
+CleanIDS(const CT_robot_CmdPort *CmdPort, const genom_context self)
 {
   geometry_Twist  *CmdPortData;
 
-  bind_port_out(CmdPort, cnam_bad_cmd_port); 
+  bind_port_out(CmdPort, CT_robot_bad_cmd_port); 
 
   CmdPortData->linear.x = 0.0;
   CmdPortData->linear.y = 0.0;
@@ -101,9 +101,9 @@ CleanIDS(const cnam_CmdPort *CmdPort, const genom_context self)
   CmdPortData->angular.y = 0.0;
   CmdPortData->angular.z = 0.0;
 
-  write_port(CmdPort, cnam_bad_cmd_port); // before quitting... stop the robot.
+  write_port(CmdPort, CT_robot_bad_cmd_port); // before quitting... stop the robot.
 
-  return cnam_ether;
+  return CT_robot_ether;
 }
 
 
@@ -111,12 +111,13 @@ CleanIDS(const cnam_CmdPort *CmdPort, const genom_context self)
 
 /** Codel GetImageFindCenter of activity ColorTrack.
  *
- * Triggered by cnam_start.
- * Yields to cnam_pause_start, cnam_CompCmd, cnam_ether.
- * Throws cnam_bad_cmd_port, cnam_bad_image_port, cnam_opencv_error.
+ * Triggered by CT_robot_start.
+ * Yields to CT_robot_pause_start, CT_robot_CompCmd, CT_robot_ether.
+ * Throws CT_robot_bad_cmd_port, CT_robot_bad_image_port,
+ *        CT_robot_opencv_error.
  */
 genom_event
-GetImageFindCenter(const cnam_ImagePort *ImagePort, int32_t my_r,
+GetImageFindCenter(const CT_robot_ImagePort *ImagePort, int32_t my_r,
                    int32_t my_g, int32_t my_b, int32_t my_seuil,
                    int32_t *x, int32_t *y, int32_t *width,
                    int32_t *height, int32_t verbose,
@@ -126,10 +127,10 @@ GetImageFindCenter(const cnam_ImagePort *ImagePort, int32_t my_r,
   sensor_Image *ImagePortData;
   sensor_msgs::Image msg;
 
-  bind_port_in(ImagePort,cnam_bad_image_port);
+  bind_port_in(ImagePort,CT_robot_bad_image_port);
 
   if (seq && (seq == ImagePortData->header.seq)) {
-    return cnam_pause_start;	// the image is not new, wait the next execution task cycle
+    return CT_robot_pause_start;	// the image is not new, wait the next execution task cycle
   }
   
   // copy ImagePortData in msg...so I can use cv_bridge
@@ -147,7 +148,7 @@ GetImageFindCenter(const cnam_ImagePort *ImagePort, int32_t my_r,
   
   if (image_size != ImagePortData->data._length) {
     warnx("Image wrong size.");
-    return cnam_bad_image_port(self);
+    return CT_robot_bad_image_port(self);
   }
 
   msg.data.reserve(image_size);
@@ -165,7 +166,7 @@ GetImageFindCenter(const cnam_ImagePort *ImagePort, int32_t my_r,
   catch (cv_bridge::Exception& e)
   {
     ROS_ERROR("cv_bridge exception: %s", e.what());
-    return cnam_opencv_error(self);
+    return CT_robot_opencv_error(self);
   }
 #if CV_VERSION_MAJOR == 4
   IplImage _ipl_img=cvIplImage(cv_ptr->image);
@@ -189,18 +190,19 @@ GetImageFindCenter(const cnam_ImagePort *ImagePort, int32_t my_r,
   *width = ptr_ipl_img->width;
   *height = ptr_ipl_img->height;
     
-  return cnam_CompCmd;
+  return CT_robot_CompCmd;
 }
 
 /** Codel ComputeSpeed of activity ColorTrack.
  *
- * Triggered by cnam_CompCmd.
- * Yields to cnam_PubCmd.
- * Throws cnam_bad_cmd_port, cnam_bad_image_port, cnam_opencv_error.
+ * Triggered by CT_robot_CompCmd.
+ * Yields to CT_robot_PubCmd.
+ * Throws CT_robot_bad_cmd_port, CT_robot_bad_image_port,
+ *        CT_robot_opencv_error.
  */
 genom_event
 ComputeSpeed(int32_t x, int32_t y, int32_t width, int32_t height,
-             cnam_cmd_s *cmd, int32_t verbose,
+             CT_robot_cmd_s *cmd, int32_t verbose,
              const genom_context self)
 {
   if (x == -1) {		// We lost it
@@ -221,23 +223,25 @@ ComputeSpeed(int32_t x, int32_t y, int32_t width, int32_t height,
  			  cmd->vx, cmd->wz, cmd_x_pixel_value, cmd_y_pixel_value);
   }
 
-  return cnam_PubCmd;
+  return CT_robot_PubCmd;
 }
 
 /** Codel PublishSpeed of activity ColorTrack.
  *
- * Triggered by cnam_PubCmd.
- * Yields to cnam_pause_start, cnam_ether.
- * Throws cnam_bad_cmd_port, cnam_bad_image_port, cnam_opencv_error.
+ * Triggered by CT_robot_PubCmd.
+ * Yields to CT_robot_pause_start, CT_robot_ether.
+ * Throws CT_robot_bad_cmd_port, CT_robot_bad_image_port,
+ *        CT_robot_opencv_error.
  */
 genom_event
-PublishSpeed(const cnam_cmd_s *cmd, const cnam_CmdPort *CmdPort,
+PublishSpeed(const CT_robot_cmd_s *cmd,
+             const CT_robot_CmdPort *CmdPort,
              const genom_context self)
 {
   // This codel publish the ids cmd speed in the port CmdPort.
   geometry_Twist  *CmdPortData;	// A pointer to the CmdPort port data.
 
-  bind_port_out(CmdPort, cnam_bad_cmd_port);
+  bind_port_out(CmdPort, CT_robot_bad_cmd_port);
 
   CmdPortData->linear.x = cmd->vx;
   CmdPortData->linear.y = 0.0;
@@ -246,25 +250,26 @@ PublishSpeed(const cnam_cmd_s *cmd, const cnam_CmdPort *CmdPort,
   CmdPortData->angular.y = 0.0;
   CmdPortData->angular.z = cmd->wz;
 
-  write_port(CmdPort, cnam_bad_cmd_port);
+  write_port(CmdPort, CT_robot_bad_cmd_port);
 
-  return cnam_pause_start;
+  return CT_robot_pause_start;
 }
 
 /** Codel StopRobot of activity ColorTrack.
  *
- * Triggered by cnam_stop.
- * Yields to cnam_ether.
- * Throws cnam_bad_cmd_port, cnam_bad_image_port, cnam_opencv_error.
+ * Triggered by CT_robot_stop.
+ * Yields to CT_robot_ether.
+ * Throws CT_robot_bad_cmd_port, CT_robot_bad_image_port,
+ *        CT_robot_opencv_error.
  */
 genom_event
-StopRobot(cnam_cmd_s *cmd, const cnam_CmdPort *CmdPort,
+StopRobot(CT_robot_cmd_s *cmd, const CT_robot_CmdPort *CmdPort,
           const genom_context self)
 {
   // Set the ids cmd and the port CmdPort to zero.
   geometry_Twist  *CmdPortData; 	// A pointer to the CmdPort port data.
 
-  bind_port_out(CmdPort, cnam_bad_cmd_port);
+  bind_port_out(CmdPort, CT_robot_bad_cmd_port);
 
   CmdPortData->linear.x = cmd->vx = 0.0;
   CmdPortData->linear.y = 0.0;
@@ -273,7 +278,7 @@ StopRobot(cnam_cmd_s *cmd, const cnam_CmdPort *CmdPort,
   CmdPortData->angular.y = 0.0;
   CmdPortData->angular.z = cmd->wz = 0.0;
 
-  write_port(CmdPort, cnam_bad_cmd_port);
+  write_port(CmdPort, CT_robot_bad_cmd_port);
   
-  return cnam_ether;
+  return CT_robot_ether;
 }

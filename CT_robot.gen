@@ -20,11 +20,11 @@
 #include "sensor.idl"      // Image definition ROS masquerade sensor/Image
 
 /* -------------------------- MODULE DECLARATION --------------------------- */
-component cnam {
+component CT_robot {
   version "1.0";
   email	  "felix@laas.fr";
   lang	  "c";
-  doc 	  "This module illustrates a simple GenoM module for the cnam ISAE UPSSITECH BE.";
+  doc 	  "This module illustrates a simple GenoM module for the CT_robot ISAE UPSSITECH BE.";
 
   codels-require "roscpp,geometry_msgs,nav_msgs,opencv4,cv_bridge";
 

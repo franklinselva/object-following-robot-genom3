@@ -1,11 +1,12 @@
-dnl Autoconf file for building cnam codels library.
+
+dnl Autoconf file for building CT_robot codels library.
 
 AC_PREREQ(2.59)
 
-AC_INIT([cnam-genom3],[1.0],[felix@laas.fr])
+AC_INIT([CT_robot-genom3],[1.0],[felix@laas.fr])
 AC_CONFIG_MACRO_DIR([autoconf])
 AC_CONFIG_AUX_DIR([autoconf])
-AC_CONFIG_HEADERS([autoconf/accnam.h])
+AC_CONFIG_HEADERS([autoconf/acCT_robot.h])
 AM_INIT_AUTOMAKE([foreign no-define])
 
 dnl Compilers
@@ -40,15 +41,15 @@ fi
 
 dnl --with-templates option
 AG_OPT_TEMPLATES([$GENOM3 ],
-    [$srcdir/cnam.gen])
+    [$srcdir/CT_robot.gen])
 
 dnl Doc
 AM_MISSING_PROG([ASCIIDOCTOR], [asciidoctor])
 
 dnl Output
 AC_CONFIG_FILES([
-	cnam-genom3.pc
-	cnam-genom3-uninstalled.pc
+	CT_robot-genom3.pc
+	CT_robot-genom3-uninstalled.pc
 	Makefile
 	codels/Makefile
 ])

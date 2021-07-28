@@ -1,4 +1,4 @@
-#include "DetectionCnam_codels.hpp"
+#include "Detection_codels.hpp"
 #include <opencv2/core/core_c.h>
 #include <opencv2/imgproc/types_c.h>
 #include <opencv2/imgproc/imgproc_c.h>
@@ -40,7 +40,7 @@ CvPoint binarisation(IplImage* image, int b, int g, int r, int tolerance) {
                 }
         }
         // Show the result of the mask image
-    cvShowImage("DetectionCnam_Codels Mask", mask);
+    cvShowImage("Detection_Codels Mask", mask);
     //Image camera
     cvShowImage("image_camera",image);
     cvWaitKey(3);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020 LAAS/CNRS
+ * Copyright (c) 2019-2021 LAAS/CNRS
  *
  * Author: Felix Ingrand - LAAS/CNRS
  *
@@ -17,9 +17,9 @@
  */
 
 #include <stdio.h>
-#include "accnam.h"
+#include "acCT_robot.h"
 
-#include "cnam_c_types.h"
+#include "CT_robot_c_types.h"
 
 /* --- Function Stop ---------------------------------------------------- */
 

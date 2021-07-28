@@ -1,12 +1,12 @@
 ACLOCAL_AMFLAGS=	-I autoconf
 
 # IDL source files
-idldir=		$(datadir)/idl/cnam
-nobase_dist_idl_DATA= cnam.gen geometry.idl sensor.idl
+idldir=		$(datadir)/idl/CT_robot
+nobase_dist_idl_DATA= CT_robot.gen geometry.idl sensor.idl
 
 pkgconfigdir=	$(libdir)/pkgconfig
 pkgconfig_DATA=
-pkgconfig_DATA+= cnam-genom3.pc
+pkgconfig_DATA+= CT_robot-genom3.pc
 
 # we don't want generated templates in the distribution
 #
@@ -25,7 +25,7 @@ distclean-local:
 merge: merge-interactive
 merge-%:
 	cd ${top_srcdir} && ${GENOM3}  \
-		skeleton -l 'c++' -m $* cnam.gen
+		skeleton -l 'c++' -m $* CT_robot.gen
 
 # documentation
 dist_doc_DATA=	README.html README.adoc
