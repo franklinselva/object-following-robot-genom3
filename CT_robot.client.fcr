@@ -1,0 +1,87 @@
+
+process client_CT_robot [
+     request_CT_robot: out request_CT_robot_type, reply_CT_robot: in reply_CT_robot_type
+     ] is
+
+states init_, send, wait_after_rqst, wait_reply, managed_reply, finish
+
+var
+    CT_robot_rq: request_CT_robot_type,
+    CT_robot_rp: reply_CT_robot_type,
+    CT_robot_rqid: CT_ROBOT_RQSTID_FCR,
+
+    CT_robot_exp_rq: exp_request_CT_robot,
+    CT_robot_exp_rp: exp_reply_CT_robot,
+
+    CT_robotq: queue 10 of exp_request_CT_robot:= {|
+      {rqid=CT_ROBOT_RQ(CT_ROBOT_ColorTrack_RQSTID_FCR), grid=0, fr=true, ir=true, wait_cycle=100},
+      {rqid=CT_ROBOT_RQ(CT_ROBOT_ColorTrack_RQSTID_FCR), grid=0, fr=true, ir=true, wait_cycle=0} //,
+//      {rqid=CT_ROBOT_RQ(CT_ROBOT_kill_RQSTID_FCR), grid=0, fr=true, ir=true, wait_cycle=0}
+    |},
+
+    wait_cycle: nat := 0,
+
+    exp_rep: 0..10 := 10,
+    grid: nat := 0
+
+from init_
+   wait [0,0];
+   exp_rep := length(CT_robotq);
+   to send
+
+from send
+   select
+      if (not (empty(CT_robotq))) then
+         CT_robot_exp_rq := first(CT_robotq);
+         CT_robotq := dequeue(CT_robotq);
+	 wait_cycle :=  CT_robot_exp_rq.wait_cycle;
+         case CT_robot_exp_rq.rqid of
+            CT_ROBOT_RQ(CT_robot_rqid) ->
+                CT_robot_rq := { rqid = CT_robot_rqid, grid = grid};
+                request_CT_robot!CT_robot_rq
+         |
+            CT_ROBOT_RQ_NONE -> null
+         end;
+         grid := grid + 1;
+         to wait_after_rqst
+      else
+         to wait_reply
+      end
+   []
+      reply_CT_robot?CT_robot_rp;
+      to managed_reply
+   end
+
+from wait_after_rqst
+   if (wait_cycle > 0) then
+      wait_cycle := wait_cycle - 1;
+      select
+         wait [0,10];
+         to wait_after_rqst
+      []
+         reply_CT_robot?CT_robot_rp;
+         to managed_reply
+      end
+   else  
+      to send
+   end
+
+from wait_reply
+   if (exp_rep > 0) then
+      select
+         reply_CT_robot?CT_robot_rp;
+         to managed_reply
+      end
+   else
+      wait [0,0];
+      to finish
+   end 
+
+from managed_reply
+   wait [0,0];
+   if (exp_rep > 0) then
+      exp_rep := exp_rep - 1;
+      to wait_after_rqst
+   else
+      to finish
+   end
