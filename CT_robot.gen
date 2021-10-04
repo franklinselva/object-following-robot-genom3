@@ -76,7 +76,7 @@ component CT_robot {
   attribute Set_my_seuil(in my_seuil);
 
   /* ------------------ SERVICES DEFINITION: The Functions -------------------- */
-  function Stop()
+  function StopColorTrack()
   {
     doc		"Stop the tracking.";
     codel	StopTrack(in verbose); // This codel does not do anything... just here as an example.
