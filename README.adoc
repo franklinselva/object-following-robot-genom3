@@ -147,8 +147,8 @@ a|.Inputs
 
 '''
 
-[[Stop]]
-=== Stop (function)
+[[StopColorTrack]]
+=== StopColorTrack (function)
 
 [role="small", width="50%", float="right", cols="1"]
 |===

@@ -21,9 +21,10 @@
 
 #include "CT_robot_c_types.h"
 
-/* --- Function Stop ---------------------------------------------------- */
 
-/** Codel StopTrack of function Stop.
+/* --- Function StopColorTrack ------------------------------------------ */
+
+/** Codel StopTrack of function StopColorTrack.
  *
  * Returns genom_ok.
  */
