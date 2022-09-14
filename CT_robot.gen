@@ -26,7 +26,7 @@ component CT_robot {
   lang	  "c";
   doc 	  "This module illustrates a simple GenoM module for the CT_robot ISAE UPSSITECH BE.";
 
-  codels-require "roscpp,geometry_msgs,nav_msgs,opencv,cv_bridge";
+  codels-require "roscpp,geometry_msgs,nav_msgs,opencv4,cv_bridge";
 
   exception bad_image_port, bad_cmd_port, opencv_error, e_mem;
 
@@ -47,7 +47,7 @@ component CT_robot {
     long my_seuil;
   };
 
-  /* ------------- DEFINITION OF PORTS -------------- */
+  /* ------------- DEFINITION OF PORTS -----./lib/x86_64-linux-gnu/pkgconfig/opencv4.pc--------- */
   port in sensor::Image ImagePort {
     doc "The port ImagePort containing the image from the camera.";
   };
