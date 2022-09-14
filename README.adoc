@@ -147,6 +147,21 @@ a|.Inputs
 
 '''
 
+[[Set_Patrouille_Speed]]
+=== Set_Patrouille_Speed (attribute)
+
+[role="small", width="50%", float="right", cols="1"]
+|===
+a|.Inputs
+[disc]
+ * `struct ::CT_robot::cmd_s` `cmd_patrouille`
+ ** `double` `vx`
+ ** `double` `wz`
+
+|===
+
+'''
+
 [[StopColorTrack]]
 === StopColorTrack (function)
 

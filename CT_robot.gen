@@ -40,6 +40,7 @@ component CT_robot {
     long width,height;		// Size of the image
     long verbose;		// For logging verbosity
     cmd_s cmd;			// Internal speed command computed
+    cmd_s cmd_patrouille;
 
     long my_r;			// Various values used by the image analysis algo.
     long my_g;
@@ -74,6 +75,7 @@ component CT_robot {
   attribute Set_my_g(in my_g);
   attribute Set_my_b(in my_b);
   attribute Set_my_seuil(in my_seuil);
+  attribute Set_Patrouille_Speed(in cmd_patrouille);
 
   /* ------------------ SERVICES DEFINITION: The Functions -------------------- */
   function StopColorTrack()
@@ -91,6 +93,7 @@ component CT_robot {
     doc 		"Produce a twist so the robot follow the colored object.";
 
     task 		track;	// The task in which ColorTrack will execute
+    after Set_Patrouille_Speed; // The activity will be executed after the Set_Patrouille_Speed service is called
 
     // Automata syntax
     // codel <state>    c_function({{ids|port|local}? {in|out|inout} arg_k,}*)
@@ -115,7 +118,7 @@ component CT_robot {
     codel <stop>	StopRobot(ids out cmd, port out CmdPort) // stop is a predefined state in GenoM
 				yield ether; // ColorTrack execution will jump to this state when the 
 					     //service is interrupted
-    codel <Lost> ComputeWheelWhenLost(ids in x, ids in y, ids in width, ids in height, ids out cmd, ids in verbose)
+    codel <Lost> ComputeWheelWhenLost(ids in x, ids in y, ids in cmd_patrouille, ids out cmd, ids in verbose)
                                 yield PubCmd;
 
     throw		bad_cmd_port, bad_image_port, opencv_error; // Possible errors in the codels. 

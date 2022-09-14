@@ -190,8 +190,12 @@ GetImageFindCenter(const CT_robot_ImagePort *ImagePort, int32_t my_r,
   *y = coord.y;
   *width = ptr_ipl_img->width;
   *height = ptr_ipl_img->height;
-    
-  return CT_robot_CompCmd;
+  
+  if (coord.x == -1) {
+    return CT_robot_Lost;
+  } else {
+    return CT_robot_CompCmd;
+  }
 }
 
 /** Codel ComputeSpeed of activity ColorTrack.
@@ -271,7 +275,7 @@ StopRobot(CT_robot_cmd_s *cmd, const CT_robot_CmdPort *CmdPort,
   CmdPortData->angular.z = cmd->wz = 0.0;
 
   write_port(CmdPort, CT_robot_bad_cmd_port);
-  
+
   return CT_robot_ether;
 }
 
@@ -283,14 +287,15 @@ StopRobot(CT_robot_cmd_s *cmd, const CT_robot_CmdPort *CmdPort,
  *        CT_robot_opencv_error.
  */
 genom_event
-ComputeWheelWhenLost(int32_t x, int32_t y, int32_t width,
-                     int32_t height, CT_robot_cmd_s *cmd,
-                     int32_t verbose, const genom_context self)
+ComputeWheelWhenLost(int32_t x, int32_t y,
+                     const CT_robot_cmd_s *cmd_patrouille,
+                     CT_robot_cmd_s *cmd, int32_t verbose,
+                     const genom_context self)
 {
   if (x == -1)
   {              // We lost it
-    cmd->wz = 0.2; // Search the brick
-    cmd->vx = 0.2;
+    cmd->wz = cmd_patrouille->wz; // Search the brick
+    cmd->vx = cmd_patrouille->vx;
 
     if (verbose > 0)
       printf("Lost the brick; Searching the brick vx: %f,\twz: %f\n",
