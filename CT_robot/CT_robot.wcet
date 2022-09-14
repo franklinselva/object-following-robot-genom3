@@ -1,0 +1,10 @@
+CT_robot_InitIDS 0.004
+CT_robot_CleanIDS 0.024
+CT_robot_GetImageFindCenter 0.006
+CT_robot_ComputeSpeedWhenLost 0.001
+CT_robot_ComputeSpeed 0.003
+CT_robot_PublishSpeed 0.001
+CT_robot_StopRobot 0.001
+CT_robot_genom_connect_port_codel 0.001
+CT_robot_genom_kill_codel 0.001
+CT_robot_StopTrack 0.001

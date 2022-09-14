@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) 2019 LAAS/CNRS
+ *
+ * Author: Felix Ingrand - LAAS/CNRS
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#ifndef IDL_SENSOR
+#define IDL_SENSOR
+
+
+module sensor {
+
+// rosmsg show sensor_msgs/Image
+// std_msgs/Header header
+//   uint32 seq
+//   time stamp
+//   string frame_id
+// uint32 height
+// uint32 width
+// string encoding
+// uint8 is_bigendian
+// uint32 step
+// uint8[] data
+
+  struct msgs_time {
+    unsigned long sec;
+    unsigned long nsec;
+  };
+
+  struct std_msgs_header {
+    unsigned long seq;
+    msgs_time stamp;
+    string frame_id;
+  };
+
+  struct sensor_msgs_Image {
+    std_msgs_header header;
+    unsigned long height;
+    unsigned long width;
+    string encoding;
+    octet is_bigendian;
+    unsigned long step;
+    sequence<octet> data;	// or may be unsigned char
+  };
+
+  typedef sensor_msgs_Image Image;
+
+#pragma masquerade ros Image sensor_msgs/Image
+
+};
+
+#endif

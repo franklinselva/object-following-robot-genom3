@@ -1,0 +1,128 @@
+/*
+ * Copyright (c) 2019-2021 LAAS/CNRS
+ *
+ * Author: Felix Ingrand - LAAS/CNRS
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include "geometry.idl"    // Twist definition ROS masquerade geometry/Twist
+#include "sensor.idl"      // Image definition ROS masquerade sensor/Image
+
+/* -------------------------- MODULE DECLARATION --------------------------- */
+component CT_robot {
+  version "1.0";
+  email	  "felix@laas.fr";
+  lang	  "c";
+  doc 	  "This module illustrates a simple GenoM module for the CT_robot ISAE UPSSITECH BE.";
+
+  codels-require "roscpp,geometry_msgs,nav_msgs,opencv4,cv_bridge";
+
+  exception bad_image_port, bad_cmd_port, opencv_error, e_mem;
+
+  struct cmd_s{
+      double vx; // The internal speed struct declaration
+      double wz;
+  };
+
+  ids {
+    long x,y; 			// Position of the center of orange object in the image
+    long width,height;		// Size of the image
+    long verbose;		// For logging verbosity
+    cmd_s cmd;			// Internal speed command computed
+    cmd_s cmd_patrouille;
+
+    long my_r;			// Various values used by the image analysis algo.
+    long my_g;
+    long my_b;
+    long my_seuil;
+  };
+
+  /* ------------- DEFINITION OF PORTS -----./lib/x86_64-linux-gnu/pkgconfig/opencv4.pc--------- */
+  port in sensor::Image ImagePort {
+    doc "The port ImagePort containing the image from the camera.";
+  };
+
+  port out geometry::Twist CmdPort { // CmdPort is the speed command port
+                                     // (cmd (see above), in lower case, is the ids field)
+    doc "The port CmdPort in which we put the speed at which we drive the robot.";
+  };
+
+  /* ------------------ TASK DEFINITION -------------------- */
+  task track {
+    period		10 ms;	// fast, but we only process the image when it is new.
+    codel <start>	InitIDS(port out CmdPort, ids out cmd, ids out x, ids out y) yield ether;
+    codel <stop>	CleanIDS(port out CmdPort) yield ether;
+  };
+
+  /* ------------------ SERVICES DEFINITION: The attributes -------------------- */
+  attribute SetVerbose(in verbose = 0 : "Verbose level")
+  {
+    doc		"Set the verbose level.";
+  };
+
+  attribute Set_my_r(in my_r);
+  attribute Set_my_g(in my_g);
+  attribute Set_my_b(in my_b);
+  attribute Set_my_seuil(in my_seuil);
+  attribute Set_Patrouille_Speed(in cmd_patrouille);
+
+  /* ------------------ SERVICES DEFINITION: The Functions -------------------- */
+  function StopColorTrack()
+  {
+    doc		"Stop the tracking.";
+    codel	StopTrack(in verbose); // This codel does not do anything... just here as an example.
+
+    interrupts	ColorTrack; // This field will force the transition to the stop codel in the 
+			    // ColorTrack activity automata
+  };
+  
+  /* ------------------ SERVICES DEFINITION: The activities -------------------- */
+
+  activity ColorTrack () {
+    doc 		"Produce a twist so the robot follow the colored object.";
+
+    task 		track;	// The task in which ColorTrack will execute
+    after Set_Patrouille_Speed; // The activity will be executed after the Set_Patrouille_Speed service is called
+
+    // Automata syntax
+    // codel <state>    c_function({{ids|port|local}? {in|out|inout} arg_k,}*)
+    //                       yield {pause::}?<state_i> {, {pause::}?<state_j>}*;
+    // - ids/port/local is optional if arg_k name is not ambiguous,
+    // - start, stop and ether are predefined states,
+    // - yield pause::state means transition will wait the next task cycle to lead to state.
+
+    codel <start>   	GetImageFindCenter(port in ImagePort, ids in my_r, ids in my_g, ids in my_b, 
+					   ids in my_seuil, ids out x, ids out y, 
+					   ids out width, ids out height, ids in verbose) 
+				yield pause::start, // no new image, wait next cycle of the exec task
+				      CompCmd,      // found the image
+              Lost,    // no image found
+				      ether;        // in case of error.
+    codel <CompCmd>	ComputeSpeed(ids in x, ids in y, ids in width, ids in height,
+				     ids out cmd, ids in verbose)
+                                yield PubCmd;
+    codel <PubCmd>	PublishSpeed(ids in cmd, port out CmdPort) 
+				yield pause::start, // Loop back at the start in the next cycle
+				      ether;        // in case of error.
+    codel <stop>	StopRobot(ids out cmd, port out CmdPort) // stop is a predefined state in GenoM
+				yield ether; // ColorTrack execution will jump to this state when the 
+					     //service is interrupted
+    codel <Lost> ComputeWheelWhenLost(ids in x, ids in y, ids in cmd_patrouille, ids out cmd, ids in verbose)
+                                yield PubCmd;
+
+    throw		bad_cmd_port, bad_image_port, opencv_error; // Possible errors in the codels. 
+								    // Any will force execution to ether
+    interrupts		ColorTrack; // Only one ColorTrack service running at a time
+  };
+};
