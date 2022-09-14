@@ -112,7 +112,8 @@ CleanIDS(const CT_robot_CmdPort *CmdPort, const genom_context self)
 /** Codel GetImageFindCenter of activity ColorTrack.
  *
  * Triggered by CT_robot_start.
- * Yields to CT_robot_pause_start, CT_robot_CompCmd, CT_robot_ether.
+ * Yields to CT_robot_pause_start, CT_robot_CompCmd, CT_robot_Lost,
+ *           CT_robot_ether.
  * Throws CT_robot_bad_cmd_port, CT_robot_bad_image_port,
  *        CT_robot_opencv_error.
  */
@@ -205,14 +206,6 @@ ComputeSpeed(int32_t x, int32_t y, int32_t width, int32_t height,
              CT_robot_cmd_s *cmd, int32_t verbose,
              const genom_context self)
 {
-  if (x == -1) {		// We lost it
-    cmd->wz = 0;		// Stop the robot
-    cmd->vx = 0;
-
-    if (verbose > 0) printf("Lost the brick vx: %f,\twz: %f\n", 
-			    cmd->vx, cmd->wz);
-  } else {
-
     float cmd_x_pixel_value= 5.0 / width; // 5 rad/s for the entire width
     float cmd_y_pixel_value= 5.0 / height; // 5 m/s for the entire height
 
@@ -221,7 +214,6 @@ ComputeSpeed(int32_t x, int32_t y, int32_t width, int32_t height,
 
     if (verbose > 0) printf("vx: %f,\twz: %f,\txp: %f,\typ: %f\n", 
  			  cmd->vx, cmd->wz, cmd_x_pixel_value, cmd_y_pixel_value);
-  }
 
   return CT_robot_PubCmd;
 }
@@ -281,4 +273,29 @@ StopRobot(CT_robot_cmd_s *cmd, const CT_robot_CmdPort *CmdPort,
   write_port(CmdPort, CT_robot_bad_cmd_port);
   
   return CT_robot_ether;
+}
+
+/** Codel ComputeWheelWhenLost of activity ColorTrack.
+ *
+ * Triggered by CT_robot_Lost.
+ * Yields to CT_robot_PubCmd.
+ * Throws CT_robot_bad_cmd_port, CT_robot_bad_image_port,
+ *        CT_robot_opencv_error.
+ */
+genom_event
+ComputeWheelWhenLost(int32_t x, int32_t y, int32_t width,
+                     int32_t height, CT_robot_cmd_s *cmd,
+                     int32_t verbose, const genom_context self)
+{
+  if (x == -1)
+  {              // We lost it
+    cmd->wz = 0.2; // Search the brick
+    cmd->vx = 0.2;
+
+    if (verbose > 0)
+      printf("Lost the brick; Searching the brick vx: %f,\twz: %f\n",
+             cmd->vx, cmd->wz);
+  }
+
+  return CT_robot_PubCmd;
 }

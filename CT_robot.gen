@@ -104,6 +104,7 @@ component CT_robot {
 					   ids out width, ids out height, ids in verbose) 
 				yield pause::start, // no new image, wait next cycle of the exec task
 				      CompCmd,      // found the image
+              Lost,    // no image found
 				      ether;        // in case of error.
     codel <CompCmd>	ComputeSpeed(ids in x, ids in y, ids in width, ids in height,
 				     ids out cmd, ids in verbose)
@@ -114,6 +115,8 @@ component CT_robot {
     codel <stop>	StopRobot(ids out cmd, port out CmdPort) // stop is a predefined state in GenoM
 				yield ether; // ColorTrack execution will jump to this state when the 
 					     //service is interrupted
+    codel <Lost> ComputeWheelWhenLost(ids in x, ids in y, ids in width, ids in height, ids out cmd, ids in verbose)
+                                yield PubCmd;
 
     throw		bad_cmd_port, bad_image_port, opencv_error; // Possible errors in the codels. 
 								    // Any will force execution to ether
